@@ -10,14 +10,28 @@
 %     T(i,6-i,6-i) = 0;
 %     T(i,6-i,i) = 0;
 % end
-
-  T = double(imread('F:\cadcg410\Desktop\wall.png'));
-alpha = [1,1,1e-3];
+%% Load Tensor
+I = load('depthPoint5v_LIMIT.txt');
+I = I';
+disp(size(I));
+as = 109;  %435 384 250
+bs = 96;
+cs = 62;
+T = zeros(as,bs,cs);
+for i = 1:as
+    for j = 1:bs
+        for k = 1:cs
+            T(i,j,k) = I(i,k+(j-1)*cs);
+        end
+    end
+end
+%   T = double(imread('F:\cadcg410\Desktop\wall.png'));
+alpha = [1,1,1];
 alpha = alpha / sum(alpha);
 beta = alpha;
 gamma = alpha*100;
-lambda =  alpha*3000;               %lambda up rank down   1000,10000 问题在error的大小和1范数被限制了
-eta = 1;
+lambda =  alpha*100;               %lambda up rank down   1000,10000 问题在error的大小和1范数被限制了
+eta = 0.0001;
 %T -    n mode tensor of observations/data (required input)
 %alpha
 %beta
@@ -46,7 +60,7 @@ t = 1;
 iter = 0;
 converged = false;
 stopCriterion = 1;
-maxIter = 100;
+maxIter = 1000;
 tol = 1e-14;
 Tnorm = norm(Unfold(T,size(T),1), 'fro');
 %% main loop
@@ -124,10 +138,19 @@ while ~converged
     end
 end
 % disp(L_star);
+fp = fopen('Depth_comp_rstd.txt','wt');
 
-subplot(1,3,1);
-imshow(uint8(T));
-subplot(1,3,2);
-imshow(uint8(L_star));
-subplot(1,3,3);
-imshow(uint8(S_star));
+    for j = 1:bs
+        for k = 1:cs
+            for i = 1:as
+                fprintf(fp,'%.2f ',L_star(i,j,k));
+            end 
+            fprintf(fp , '\n');
+        end
+    end
+% subplot(1,3,1);
+% imshow(uint8(T));
+% subplot(1,3,2);
+% imshow(uint8(L_star));
+% subplot(1,3,3);
+% imshow(uint8(S_star));
