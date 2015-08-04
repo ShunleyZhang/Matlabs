@@ -1,4 +1,4 @@
-function [A iter svp] = fast_alm_mc(D, tol, maxIter)
+function [A S iter svp] = fast_alm_mc(D, tol, maxIter)
 
 % Oct 2009
 % This matlab code implements the inexact augmented Lagrange multiplier 

@@ -12,7 +12,7 @@ if newDataFlag == 1
     
     clc ;
     close all ;
-    m = 1000 ;
+    m = 100 ;
     pdr = 6;
     n = m ;
     r = 10;
@@ -24,6 +24,13 @@ if newDataFlag == 1
     V = UVtOmega(ML, MR, I, J, col);
     
     D = spconvert([I,J,V; m,n,0]);
+    E = zeros(100,100);
+    for i = 1:100
+        for j = 1:100
+            E(i,j) = D(i,j);
+        end
+    end
+    disp(E);
 %     clear I J col;
     
 end
@@ -59,4 +66,9 @@ disp('rank of A');
 disp(svp);
 disp('|A-M|_F / |M|_F');
 disp(error);
+ subplot(211);
+ 
+imshow(full(A.U * svp * A.V'));
+ subplot(212);
+imshow(full(D));
 
