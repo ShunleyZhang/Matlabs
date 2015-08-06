@@ -1,0 +1,119 @@
+Map = cell(1,4);
+Map{1,1} = load('pair_0 (2).txt');%0
+%%cost1
+Map{2,1} = load('cost_0 (2).txt');%0
+%%cost2
+Map{3,1} = load('cost_1 (2).txt');%0
+[Map{4,1}] = GoodPixelSelect( Map{2,1}, Map{3,1}, 0.3 );
+
+%% find proper patch and record their left-up position
+N = 5; %patchsize
+GPMap = Map{4,1};
+s = size(GPMap);
+disp(s);
+disp(length(nonzeros(GPMap)));
+P = zeros(N,N);
+Q = zeros(N,N);
+ProMap = zeros(s(1),s(2));
+minContent = N*N*0.9;
+maxContent = N*N*1;
+
+f = 0; 
+for i = 1:s(1)-N+1
+    for j = 1:s(2)-N+1
+        P = GPMap(i:i+N-1,j:j+N-1);
+        f = length(nonzeros(P));
+        if f<=maxContent && f>=minContent
+            ProMap(i,j) = 1;
+        end
+    end
+end
+
+ProperIndex = find(ProMap);
+[I,J] = find(ProMap);
+disp(size(ProperIndex,1));
+
+patchList = zeros(length(ProperIndex),N*N);
+patchMask = zeros(length(ProperIndex),N*N);
+% disp(I);
+% disp(J);
+for i = 1:length(ProperIndex)
+%     disp(i);
+%     disp(I(i));
+%     disp(J(i));
+    P = Map{1,1}(I(i):I(i)+N-1,J(i):J(i)+N-1);
+    Q = GPMap(I(i):I(i)+N-1,J(i):J(i)+N-1);
+  %  P = P-Map{1,1}(I(i),J(i));
+    patchList(i,:) = P(:);
+    patchMask(i,:) = Q(:);
+% disp(patchList(i,:));
+end
+disp(size(patchList));
+disp(rank(patchList));
+
+
+
+n1 = size(patchList,1);n2 = size(patchList,2);
+%patchList1 = patchList.*patchMask;
+
+subplot(141);
+imagesc(patchMask);
+subplot(142);
+imagesc(patchList);
+
+[A,E] = exact_alm_rpca(patchList,0.05);
+Omega = (patchMask>0);
+subplot(143);
+imagesc(A);
+subplot(144);
+imagesc(E);
+
+NewM = Map{4,1};
+for i = 1:length(ProperIndex)
+%     disp(i);
+%     disp(I(i));
+%     disp(J(i));
+    P(:) = A(i,:);
+    NewM(I(i):I(i)+N-1,J(i):J(i)+N-1) = P;
+%     Q = GPMap(I(i):I(i)+N-1,J(i):J(i)+N-1);
+%   %  P = P-Map{1,1}(I(i),J(i));
+%     patchList(i,:) = P(:);
+%     patchMask(i,:) = Q(:);
+    
+% disp(patchList(i,:));
+end
+subplot(121);
+imagesc(Map{4,1}.*Map{1,1});
+subplot(122);
+imagesc(NewM);
+% %Omega = (patchList>0);
+% as=find(Omega~=0);
+% Omega = as;
+% p  = size(Omega,1)/(n1*n2);
+% data = patchList(Omega);
+% 
+% fprintf('Matrix completion: %d x %d matrix, rank %d, %.1f%% observations\n',...
+%     n1,n2,0,100*p);
+% % fprintf('\toversampling degrees of freedom by %.1f; noise std is %.1e\n',...
+% %     m/df, sigma );
+% maxiter = 500; 
+% tol = 1e-4;
+% tau = 10*sqrt(n1*n2); 
+% delta = 1.2/p;  
+% fprintf('\nSolving by SVT...\n');
+% tic
+% disp(class(data));
+% disp(class(Omega));
+% disp(class(n1));
+% [U,S,V,numiter] = SVT([n1 n2],Omega,data,tau,delta,maxiter,tol);
+% toc
+%     
+% X = U*S*V';
+% subplot(131);
+% imagesc(patchMask);
+% subplot(132);
+% imagesc(patchList);
+% subplot(133);
+% imagesc(X);
+% fprintf('The recovered rank is %d\n',length(diag(S)) );
+% fprintf('The relative error on Omega is: %d\n', norm(data-X(Omega))/norm(data))
